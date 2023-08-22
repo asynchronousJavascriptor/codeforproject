@@ -12,28 +12,48 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/profile', isLoggedIn, function (req, res, next) {
+  userModel.findOne({ username: req.session.passport.user })
+    .then(function (foundUser) {
+      res.render("profile", { foundUser })
+    })
+});
+
+router.get('/like/:postid', isLoggedIn, function (req, res, next) {
   userModel.findOne({username: req.session.passport.user})
   .then(function(foundUser){
-    res.render("profile", {foundUser})
+    postModel.findOne({_id: req.params.postid})
+    .then(function(post){
+      post.likes.push(foundUser._id);
+      post.save()
+      .then(function(){
+        res.redirect("back");
+      })
+    })
   })
 });
 
 router.post('/post', isLoggedIn, function (req, res, next) {
-  postModel.create({
-    username: req.session.passport.user,
-    data: req.body.post
+  userModel.findOne({username: req.session.passport.user})
+  .then(function(foundUser){
+    postModel.create({
+      userid: foundUser._id,
+      data: req.body.post
+    })
+    .then(function (createdPost) {
+      foundUser.posts.push(createdPost._id);
+      foundUser.save()
+      .then(function(){
+        res.redirect("back");
+      })
+    });
   })
-  .then(function(createdPost){
-    res.redirect("back");
-  });
 });
-
 
 router.get('/feed', isLoggedIn, function (req, res, next) {
   postModel.find()
-  .then(function(allposts){
-    res.render("feed", {allposts});
-  });
+    .then(function (allposts) {
+      res.render("feed", { allposts });
+    });
 });
 
 router.get('/login', function (req, res, next) {
@@ -41,40 +61,50 @@ router.get('/login', function (req, res, next) {
 });
 
 router.get('/logout', function (req, res, next) {
-  req.logout(function(err) {
+  req.logout(function (err) {
     if (err) { return next(err); }
     res.redirect('/login');
   });
 });
 
 router.post('/login', passport.authenticate("local", {
-  successRedirect: "/profile",                                                              
+  successRedirect: "/profile",
   failureRedirect: "/login"
 }), function (req, res, next) {
 });
 
 router.post('/register', function (req, res, next) {
-  var newuser = new userModel({
-    username: req.body.username,
-    age: req.body.age,
-    email: req.body.email,
-    image: req.body.image,
-  });
-
-  userModel.register(newuser, req.body.password)
-  .then(function(u){
-    passport.authenticate("local")(req, res, function(){
-      res.redirect("/profile");
-    })
+  userModel.findOne({username: req.body.username})
+  .then(function(foundUser){
+    if(foundUser){
+      // will run if there is some user
+      res.send("username already exists");
+    }
+    else{
+      // will run if there is no use with same username 
+      var newuser = new userModel({
+        username: req.body.username,
+        age: req.body.age,
+        email: req.body.email,
+        image: req.body.image,
+      });
+    
+      userModel.register(newuser, req.body.password)
+        .then(function (u) {
+          passport.authenticate("local")(req, res, function () {
+            res.redirect("/profile");
+          })
+        });
+    }
   });
 });
 
 
-function isLoggedIn(req, res, next){
-  if(req.isAuthenticated()){
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) {
     return next();
   }
-  else{
+  else {
     res.redirect("/login");
   }
 }
