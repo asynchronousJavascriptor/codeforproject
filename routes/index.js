@@ -19,38 +19,48 @@ router.get('/profile', isLoggedIn, function (req, res, next) {
 });
 
 router.get('/like/:postid', isLoggedIn, function (req, res, next) {
-  userModel.findOne({username: req.session.passport.user})
-  .then(function(foundUser){
-    postModel.findOne({_id: req.params.postid})
-    .then(function(post){
-      post.likes.push(foundUser._id);
-      post.save()
-      .then(function(){
-        res.redirect("back");
+  userModel
+  .findOne({username: req.session.passport.user})
+  .then(function(user){
+    postModel
+    .findOne({_id: req.params.postid})
+      .then(function(post){
+        if(post.likes.indexOf(user._id) === -1){
+          post.likes.push(user._id);
+        }
+        else{
+          post.likes.splice(post.likes.indexOf(user._id) , 1);
+        }
+          post.save()
+          .then(function(){
+            res.redirect("back");
+          })
       })
-    })
   })
 });
 
 router.post('/post', isLoggedIn, function (req, res, next) {
-  userModel.findOne({username: req.session.passport.user})
-  .then(function(foundUser){
+  userModel
+  .findOne({username: req.session.passport.user})
+  .then(function(user){
     postModel.create({
-      userid: foundUser._id,
+      userid: user._id,
       data: req.body.post
     })
-    .then(function (createdPost) {
-      foundUser.posts.push(createdPost._id);
-      foundUser.save()
+    .then(function(post){
+      user.posts.push(post._id);
+      user.save()
       .then(function(){
         res.redirect("back");
       })
-    });
+    })
   })
 });
 
 router.get('/feed', isLoggedIn, function (req, res, next) {
-  postModel.find()
+  postModel
+  .find()
+  .populate("userid")
     .then(function (allposts) {
       res.render("feed", { allposts });
     });

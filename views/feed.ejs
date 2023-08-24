@@ -15,9 +15,9 @@
         <% allposts.forEach(function(post){ %>
             <div class="card" style="width: 45rem;">
                 <div class="card-body">
-                  <h5 class="card-title">@<%= post.userid %></h5>
+                  <h5 class="card-title">@<%= post.userid.username %></h5>
                   <p class="card-text"><%= post.data %></p>
-                  <p style="font-weight: 600;" class="text-primary"><%= post.likes %> Likes</p>
+                  <p style="font-weight: 600;" class="text-primary"><%= post.likes.length %> Likes</p>
                   <a href="/like/<%= post._id %>" class="btn btn-primary">Like</a>
                 </div>
             </div>    
