@@ -12,10 +12,13 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/profile', isLoggedIn, function (req, res, next) {
-  userModel.findOne({ username: req.session.passport.user })
-    .then(function (foundUser) {
-      res.render("profile", { foundUser })
-    })
+  userModel
+  .findOne({ username: req.session.passport.user })
+  .populate("posts")
+  .then(function (foundUser) {
+    console.log(foundUser);
+    res.render("profile", { foundUser })
+  })
 });
 
 router.get('/like/:postid', isLoggedIn, function (req, res, next) {
@@ -29,12 +32,13 @@ router.get('/like/:postid', isLoggedIn, function (req, res, next) {
           post.likes.push(user._id);
         }
         else{
-          post.likes.splice(post.likes.indexOf(user._id) , 1);
+          post.likes.splice(post.likes.indexOf(user._id), 1);
         }
-          post.save()
-          .then(function(){
-            res.redirect("back");
-          })
+
+        post.save()
+        .then(function(){
+          res.redirect("back");
+        })
       })
   })
 });
