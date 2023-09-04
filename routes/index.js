@@ -62,12 +62,15 @@ router.post('/post', isLoggedIn, function (req, res, next) {
 });
 
 router.get('/feed', isLoggedIn, function (req, res, next) {
-  postModel
-  .find()
-  .populate("userid")
-    .then(function (allposts) {
-      res.render("feed", { allposts });
-    });
+  userModel.findOne({username: req.session.passport.user})
+  .then(function(user){
+    postModel
+    .find()
+    .populate("userid")
+      .then(function (allposts) {
+        res.render("feed", { allposts, user });
+      });
+  })
 });
 
 router.get('/login', function (req, res, next) {

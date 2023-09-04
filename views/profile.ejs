@@ -39,8 +39,8 @@
             <p class="card-text">
               <%= post.data %>
             </p>
-            <p style="font-weight: 600;" class="text-primary">0 Likes</p>
-            <a href="/like/" class="btn btn-primary">Like</a>
+            <p style="font-weight: 600;" class="text-primary"><%= post.likes.length %> Likes</p>
+            <a href="/like/<%= post._id %>" class="btn <%= post.likes.indexOf(foundUser.id) === -1 ? 'btn-primary' : 'btn-danger' %>"><%= post.likes.indexOf(foundUser.id) === -1 ? "Like" : "Unlike" %></a>
           </div>
         </div>
         <% }) %>
