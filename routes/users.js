@@ -11,7 +11,10 @@ const userSchema = mongoose.Schema({
     {type: mongoose.Schema.Types.ObjectId, ref: "post"}
   ],
   email: String,
-  image: String
+  image: {
+    type: String,
+    default: "def.png"
+  }
 })
 
 userSchema.plugin(plm);

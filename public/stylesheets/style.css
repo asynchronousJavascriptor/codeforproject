@@ -34,3 +34,35 @@ html,body{
   resize: none;
   font-weight: 600;
 }
+
+.pencil{
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+}
+
+.pencil i{
+  opacity: .5;
+  font-size: 11px;
+}
+
+.parentcircle{
+  position: relative;
+}
+
+.parentcircle:hover .pencil{
+  opacity: 1;
+}
+
+#uploadpic{
+  /* display: none; */
+}
