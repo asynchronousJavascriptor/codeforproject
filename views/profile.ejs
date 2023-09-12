@@ -1,5 +1,5 @@
 <% include ./partials/header.ejs %>
-  <form id="uploadpic" action="/upload">
+  <form id="uploadpic" method="post" action="/upload" enctype="multipart/form-data">
     <input id="fileinp" type="file" name="image">
   </form>
   <div class="container py-3">
