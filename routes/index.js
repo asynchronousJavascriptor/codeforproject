@@ -26,6 +26,17 @@ router.get('/', function (req, res, next) {
   res.render('index');
 });
 
+router.post('/update', isLoggedIn, function (req, res, next) {
+  userModel
+  .findOneAndUpdate({username: req.session.passport.user}, {username: req.body.username}, {new: true})
+  .then(function(updateduser){
+    req.login(updateduser, function(err) {
+      if (err) { return next(err); }
+      return res.redirect('/profile');
+    });
+  })
+});
+
 router.post('/upload', isLoggedIn, upload.single("image"), function (req, res, next) {
   // upload ho chuki hai data req.file mein hai
   userModel
@@ -49,6 +60,27 @@ router.get('/profile', isLoggedIn, function (req, res, next) {
     .then(function (foundUser) {
       console.log(foundUser);
       res.render("profile", { foundUser })
+    })
+});
+
+router.get('/check/:username', function (req, res, next) {
+  userModel.findOne({username: req.params.username})
+  .then(function(user){
+    if(user){
+      res.json(true);
+    }
+    else{
+      res.json(false);
+    }
+  });
+});
+
+router.get('/edit', isLoggedIn, function (req, res, next) {
+  userModel
+    .findOne({ username: req.session.passport.user })
+    .then(function (foundUser) {
+      console.log(foundUser);
+      res.render("edit", { foundUser })
     })
 });
 
