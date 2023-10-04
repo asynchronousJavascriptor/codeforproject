@@ -14,7 +14,8 @@ const userSchema = mongoose.Schema({
   image: {
     type: String,
     default: "def.png"
-  }
+  },
+  key: String
 })
 
 userSchema.plugin(plm);

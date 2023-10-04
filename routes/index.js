@@ -6,6 +6,9 @@ const passport = require('passport');
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+const crypto = require("crypto");
+
+const mailer = require("../nodemailer");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -24,6 +27,26 @@ passport.use(new localStrategy(userModel.authenticate()));
 
 router.get('/', function (req, res, next) {
   res.render('index');
+});
+
+router.get('/forgot', function (req, res, next) {
+  res.render('forgot');
+});
+
+router.post('/forgot', async function (req, res, next) {
+  var user = await userModel.findOne({email: req.body.email});
+  if(!user){
+    res.send("we've sent a mail, if email exists.");
+  }
+  else{
+    // user ke liye ek key banao
+    crypto.randomBytes(80, async function(err, buff){
+      let key = buff.toString("hex");
+      user.key = key;
+      await user.save();
+      mailer(req.body.email, user._id, key)
+    })
+  }
 });
 
 router.post('/update', isLoggedIn, function (req, res, next) {
