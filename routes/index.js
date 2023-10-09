@@ -26,27 +26,52 @@ const localStrategy = require("passport-local");
 passport.use(new localStrategy(userModel.authenticate()));
 
 router.get('/', function (req, res, next) {
-  res.render('index');
+  res.render('index', {title: "hey"});
 });
 
 router.get('/forgot', function (req, res, next) {
   res.render('forgot');
 });
 
-router.post('/forgot', async function (req, res, next) {
-  var user = await userModel.findOne({email: req.body.email});
-  if(!user){
-    res.send("we've sent a mail, if email exists.");
+router.post('/resetpass/:userid', async function (req, res, next) {
+  let user = await userModel.findOne({_id: req.params.userid});
+  user.setPassword(req.body.password, async function(){
+    user.key = "";
+    await user.save();
+    req.logIn(user, function(){
+      res.redirect("/profile");
+    })
+  })
+});
+
+router.get('/forgot/:userid/:key', async function (req, res, next) {
+  let user = await userModel.findOne({_id: req.params.userid});
+  if(user.key === req.params.key && Date.now() < user.expirykey){
+    // show a page to a user which asks for new passwords 
+    res.render("reset", {user})
   }
   else{
-    // user ke liye ek key banao
-    crypto.randomBytes(80, async function(err, buff){
-      let key = buff.toString("hex");
-      user.key = key;
-      await user.save();
-      mailer(req.body.email, user._id, key)
-    })
+    res.send("tez hmmmmmmmm.");
   }
+});
+
+router.post('/forgot', async function (req, res, next) {
+    let user = await userModel.findOne({email: req.body.email});
+    if(!user){
+      res.send("we have sent mail if user exists");
+    }
+    else{
+      crypto.randomBytes(80, async function(err, buff){
+        let key = buff.toString("hex");
+        mailer(req.body.email, user._id, key)
+        .then(async function(){
+          user.expirykey = Date.now() - 24*60*60*1000;
+          user.key = key;
+          await user.save();
+          res.send("mail sent");
+        })
+      })
+    }
 });
 
 router.post('/update', isLoggedIn, function (req, res, next) {

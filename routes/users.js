@@ -15,7 +15,8 @@ const userSchema = mongoose.Schema({
     type: String,
     default: "def.png"
   },
-  key: String
+  key: String,
+  expirykey: Date
 })
 
 userSchema.plugin(plm);
